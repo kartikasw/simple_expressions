@@ -7,15 +7,15 @@ class SimpleExpression {
 
   double evaluate(String expression) {
     try {
-      expression = handlePercentages(expression);
-      List<String> tokens = tokenize(expression);
-      return evaluateTokens(tokens);
+      expression = _handlePercentages(expression);
+      List<String> tokens = _tokenize(expression);
+      return _evaluateTokens(tokens);
     } catch (e) {
       throw 'Unable to evaluate the expression';
     }
   }
 
-  String handlePercentages(String expression) {
+  String _handlePercentages(String expression) {
     RegExp percentagePattern = RegExp(r'(\d+(\.\d+)?)%');
     String modifiedExpression = expression;
 
@@ -30,12 +30,12 @@ class SimpleExpression {
     return modifiedExpression;
   }
 
-  List<String> tokenize(String expression) {
+  List<String> _tokenize(String expression) {
     List<String> tokens = [];
     String currentToken = '';
 
     for (int i = 0; i < expression.length; i++) {
-      if (isOperator(expression[i]) || isParenthesis(expression[i])) {
+      if (_isOperator(expression[i]) || _isParenthesis(expression[i])) {
         if (currentToken.isNotEmpty) {
           tokens.add(currentToken);
           currentToken = '';
@@ -53,28 +53,28 @@ class SimpleExpression {
     return tokens;
   }
 
-  bool isOperator(String token) {
+  bool _isOperator(String token) {
     return token == '+' || token == '-' || token == '*' || token == '/';
   }
 
-  bool isLeftParenthesis(String token) {
+  bool _isLeftParenthesis(String token) {
     return token == '(';
   }
 
-  bool isRightParenthesis(String token) {
+  bool _isRightParenthesis(String token) {
     return token == ')';
   }
 
-  bool isParenthesis(String token) {
-    return isLeftParenthesis(token) || isRightParenthesis(token);
+  bool _isParenthesis(String token) {
+    return _isLeftParenthesis(token) || _isRightParenthesis(token);
   }
 
-  double evaluateTokens(List<String> tokens) {
+  double _evaluateTokens(List<String> tokens) {
     for (int i = 0; i < tokens.length; i++) {
       if (tokens[i] == '-' &&
           (i == 0 ||
-              isOperator(tokens[i - 1]) ||
-              isLeftParenthesis(tokens[i - 1]))) {
+              _isOperator(tokens[i - 1]) ||
+              _isLeftParenthesis(tokens[i - 1]))) {
 
         // Handle negative sign at the beginning or after an operator or left parenthesis
         tokens[i] = tokens[i] + tokens[i + 1];
@@ -87,19 +87,19 @@ class SimpleExpression {
 
     for (int i = 0; i < tokens.length; i++) {
       String token = tokens[i];
-      if (isNumeric(token)) {
+      if (_isNumeric(token)) {
         postfix.add(token);
-      } else if (isLeftParenthesis(token)) {
+      } else if (_isLeftParenthesis(token)) {
         operatorStack.add(token);
-      } else if (isRightParenthesis(token)) {
+      } else if (_isRightParenthesis(token)) {
         while (operatorStack.isNotEmpty &&
-            !isLeftParenthesis(operatorStack.last)) {
+            !_isLeftParenthesis(operatorStack.last)) {
           postfix.add(operatorStack.removeLast());
         }
         operatorStack.removeLast();
-      } else if (isOperator(token)) {
+      } else if (_isOperator(token)) {
         while (operatorStack.isNotEmpty &&
-            getPrecedence(operatorStack.last) >= getPrecedence(token)) {
+            _getPrecedence(operatorStack.last) >= _getPrecedence(token)) {
           postfix.add(operatorStack.removeLast());
         }
         operatorStack.add(token);
@@ -110,18 +110,15 @@ class SimpleExpression {
       postfix.add(operatorStack.removeLast());
     }
 
-    return evaluatePostfix(postfix);
+    return _evaluatePostfix(postfix);
   }
 
-  bool isNumeric(String str) {
-    if (str == null) {
-      return false;
-    }
+  bool _isNumeric(String str) {
     return double.tryParse(str) != null ||
         (str.startsWith('-') && double.tryParse(str.substring(1)) != null);
   }
 
-  int getPrecedence(String operator) {
+  int _getPrecedence(String operator) {
     if (operator == '+' || operator == '-') {
       return 1;
     } else if (operator == '*' || operator == '/') {
@@ -130,13 +127,13 @@ class SimpleExpression {
     return 0;
   }
 
-  double evaluatePostfix(List<String> postfix) {
+  double _evaluatePostfix(List<String> postfix) {
     List<double> stack = [];
 
     for (String token in postfix) {
-      if (isNumeric(token)) {
+      if (_isNumeric(token)) {
         stack.add(double.parse(token));
-      } else if (isOperator(token)) {
+      } else if (_isOperator(token)) {
         double operand2 = stack.removeLast();
         double operand1 = stack.removeLast();
 
